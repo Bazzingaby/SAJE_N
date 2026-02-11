@@ -1,0 +1,30 @@
+{
+  "name": "cosmos",
+  "version": "0.2.0-alpha",
+  "private": true,
+  "description": "Touch-first, AI-native development platform",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  },
+  "packageManager": "pnpm@9.15.9",
+  "scripts": {
+    "dev": "pnpm --filter @cosmos/web dev",
+    "build": "pnpm --filter @cosmos/web build",
+    "lint": "pnpm --filter @cosmos/web lint",
+    "typecheck": "pnpm --filter @cosmos/web typecheck",
+    "test": "pnpm --filter @cosmos/web test",
+    "test:coverage": "pnpm --filter @cosmos/web test:coverage",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.6.1",
+    "@commitlint/config-conventional": "^19.6.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.3.0",
+    "prettier": "^3.4.2"
+  }
+}
