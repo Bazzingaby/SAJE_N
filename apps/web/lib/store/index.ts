@@ -1,0 +1,21 @@
+export { useWorkspaceStore } from './workspace-store';
+export type {
+  CanvasMode,
+  FileNode,
+  OpenTab,
+  AgentType,
+  AgentStatus,
+  AgentState,
+  ChatRole,
+  ChatMessage,
+  LLMProvider,
+  LLMConfig,
+  BottomTab,
+  UIState,
+  WorkspaceSlice,
+  FilesSlice,
+  CanvasSlice,
+  AgentsSlice,
+  UISlice,
+  WorkspaceStore,
+} from './types';
