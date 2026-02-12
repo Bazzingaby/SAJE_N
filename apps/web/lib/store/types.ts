@@ -1,4 +1,5 @@
 import type { StateCreator } from 'zustand';
+import type { Node, Edge } from '@xyflow/react';
 
 // ─── Canvas Modes ──────────────────────────────────────────────────────────────
 
@@ -115,15 +116,18 @@ export interface FilesSlice {
 }
 
 export interface CanvasSlice {
-  nodes: unknown[];
-  edges: unknown[];
-  setNodes: (nodes: unknown[]) => void;
-  setEdges: (edges: unknown[]) => void;
-  addNode: (node: unknown) => void;
+  nodes: Node[];
+  edges: Edge[];
+  setNodes: (nodes: Node[]) => void;
+  setEdges: (edges: Edge[]) => void;
+  addNode: (node: Node) => void;
   removeNode: (nodeId: string) => void;
-  addEdge: (edge: unknown) => void;
+  addEdge: (edge: Edge) => void;
   removeEdge: (edgeId: string) => void;
 }
+
+// Re-export for convenience
+export type { Node, Edge };
 
 export interface AgentsSlice {
   agents: AgentState[];
@@ -150,11 +154,7 @@ export interface UISlice {
 
 // ─── Combined Store ────────────────────────────────────────────────────────────
 
-export type WorkspaceStore = WorkspaceSlice &
-  FilesSlice &
-  CanvasSlice &
-  AgentsSlice &
-  UISlice;
+export type WorkspaceStore = WorkspaceSlice & FilesSlice & CanvasSlice & AgentsSlice & UISlice;
 
 // ─── Slice Creator Type ────────────────────────────────────────────────────────
 
