@@ -24,15 +24,16 @@ Every Claude Code session operates as a full engineering team:
 ## Project State Machine
 
 ```
-[ARCHITECTURE_COMPLETE] ← current state
+[ARCHITECTURE_COMPLETE] ✅ done
        │
        ▼
-[SPRINT_1_FOUNDATION] → S1.1 Next.js setup (3pts)
-                        S1.2 Monaco + touch (5pts)
-                        S1.3 File explorer (3pts)
-                        S1.4 Touch toolbar (3pts)
-                        S1.5 Basic layout (2pts)
-                        S1.6 Zustand store (5pts)
+[SPRINT_1_FOUNDATION] ✅ done (21/21pts) ← current state
+                        S1.1 Next.js setup (3pts) ✅
+                        S1.2 Monaco + touch (5pts) ✅
+                        S1.3 File explorer (3pts) ✅
+                        S1.4 Touch toolbar (3pts) ✅
+                        S1.5 Basic layout (2pts) ✅
+                        S1.6 Zustand store (5pts) ✅
        │                                    = 21pts
        ▼
 [SPRINT_2_CANVAS_COLLAB] → S2.1 ReactFlow canvas (8pts)
@@ -73,7 +74,7 @@ Every Claude Code session operates as a full engineering team:
 [MVP_COMPLETE]                        Total = 125pts
 ```
 
-**Current State: `ARCHITECTURE_COMPLETE` — Ready for Sprint 1**
+**Current State: `SPRINT_1_FOUNDATION` complete — Ready for Sprint 2**
 
 ## Execution Protocol
 
