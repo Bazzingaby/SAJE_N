@@ -43,3 +43,6 @@ docker-compose.override.yml
 
 # Windows device file (NUL) accidentally seen by git
 nul
+
+# Claude Code local session data (machine-specific)
+.claude/
