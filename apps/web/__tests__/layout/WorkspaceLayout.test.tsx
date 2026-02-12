@@ -21,6 +21,11 @@ vi.mock('../../components/canvas/BoardCanvas', () => ({
 vi.mock('../../components/toolbar/TouchToolbar', () => ({
   TouchToolbar: () => <div data-testid="touch-toolbar-mock">Touch Toolbar</div>,
 }));
+// TerminalPanel uses xterm.js which requires real browser APIs (canvas,
+// matchMedia) unavailable in jsdom — mock it at the panel level.
+vi.mock('../../components/panels/TerminalPanel', () => ({
+  TerminalPanel: () => <div data-testid="terminal-panel-mock">Terminal</div>,
+}));
 
 describe('WorkspaceLayout', () => {
   beforeEach(() => {

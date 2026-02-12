@@ -1,7 +1,8 @@
-"use client";
+'use client';
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PanelPlaceholder } from "./PanelPlaceholder";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { PanelPlaceholder } from './PanelPlaceholder';
+import { TerminalPanel } from '@/components/panels/TerminalPanel';
 
 export function BottomPanel() {
   return (
@@ -10,35 +11,20 @@ export function BottomPanel() {
       className="flex h-full flex-col border-t border-border bg-bg-secondary"
     >
       <Tabs defaultValue="terminal" className="flex h-full flex-col">
-        <TabsList
-          variant="line"
-          className="h-9 shrink-0 border-b border-border px-2"
-        >
-          <TabsTrigger
-            value="terminal"
-            className="h-11 min-w-[44px] px-3 text-xs"
-          >
+        <TabsList variant="line" className="h-9 shrink-0 border-b border-border px-2">
+          <TabsTrigger value="terminal" className="h-11 min-w-[44px] px-3 text-xs">
             Terminal
           </TabsTrigger>
-          <TabsTrigger
-            value="output"
-            className="h-11 min-w-[44px] px-3 text-xs"
-          >
+          <TabsTrigger value="output" className="h-11 min-w-[44px] px-3 text-xs">
             Output
           </TabsTrigger>
-          <TabsTrigger
-            value="problems"
-            className="h-11 min-w-[44px] px-3 text-xs"
-          >
+          <TabsTrigger value="problems" className="h-11 min-w-[44px] px-3 text-xs">
             Problems
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="terminal" className="flex-1 overflow-hidden">
-          <PanelPlaceholder
-            title="Terminal"
-            description="An integrated terminal will appear here. Run commands directly in your workspace."
-          />
+          <TerminalPanel />
         </TabsContent>
 
         <TabsContent value="output" className="flex-1 overflow-hidden">
