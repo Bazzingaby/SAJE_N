@@ -109,7 +109,7 @@ describe('TerminalPanel', () => {
   it('registers an onData handler for local echo', () => {
     render(<TerminalPanel />);
     expect(mockOnData).toHaveBeenCalledOnce();
-    expect(typeof mockOnData.mock.calls[0][0]).toBe('function');
+    expect(typeof mockOnData.mock.calls[0]?.[0]).toBe('function');
   });
 
   it('sets up a ResizeObserver on the container', () => {

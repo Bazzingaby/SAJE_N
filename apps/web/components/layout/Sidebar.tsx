@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 import {
   FileText,
   Search,
@@ -9,14 +9,9 @@ import {
   Settings,
   PanelLeftClose,
   PanelLeft,
-} from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
+} from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
 type SidebarItem = {
   id: string;
@@ -25,27 +20,34 @@ type SidebarItem = {
 };
 
 const topItems: SidebarItem[] = [
-  { id: "files", label: "Files", icon: FileText },
-  { id: "search", label: "Search", icon: Search },
-  { id: "git", label: "Git", icon: GitBranch },
-  { id: "extensions", label: "Extensions", icon: Blocks },
+  { id: 'files', label: 'Files', icon: FileText },
+  { id: 'search', label: 'Search', icon: Search },
+  { id: 'git', label: 'Git', icon: GitBranch },
+  { id: 'extensions', label: 'Extensions', icon: Blocks },
 ];
 
-const bottomItems: SidebarItem[] = [
-  { id: "settings", label: "Settings", icon: Settings },
-];
+const bottomItems: SidebarItem[] = [{ id: 'settings', label: 'Settings', icon: Settings }];
 
-export function Sidebar() {
+interface SidebarProps {
+  /** Called when the user clicks a panel icon that has panel content */
+  onPanelChange?: (panel: 'files' | 'git') => void;
+  /** Controlled active panel from parent */
+  activePanel?: 'files' | 'git';
+}
+
+const PANEL_ICONS = new Set<string>(['files', 'git']);
+
+export function Sidebar({ onPanelChange, activePanel }: SidebarProps = {}) {
   const [expanded, setExpanded] = useState(false);
-  const [activeItem, setActiveItem] = useState("files");
+  const [activeItem, setActiveItem] = useState<string>(activePanel ?? 'files');
 
   return (
     <TooltipProvider>
       <aside
         data-testid="sidebar"
         className={cn(
-          "flex h-full flex-col border-r border-border bg-bg-secondary transition-all duration-200",
-          expanded ? "w-60" : "w-14"
+          'flex h-full flex-col border-r border-border bg-bg-secondary transition-all duration-200',
+          expanded ? 'w-60' : 'w-14',
         )}
       >
         {/* Expand/Collapse toggle */}
@@ -56,7 +58,7 @@ export function Sidebar() {
                 type="button"
                 onClick={() => setExpanded(!expanded)}
                 className="flex h-11 w-11 items-center justify-center rounded-md text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
-                aria-label={expanded ? "Collapse sidebar" : "Expand sidebar"}
+                aria-label={expanded ? 'Collapse sidebar' : 'Expand sidebar'}
               >
                 {expanded ? (
                   <PanelLeftClose className="h-5 w-5" />
@@ -66,7 +68,7 @@ export function Sidebar() {
               </button>
             </TooltipTrigger>
             <TooltipContent side="right">
-              {expanded ? "Collapse sidebar" : "Expand sidebar"}
+              {expanded ? 'Collapse sidebar' : 'Expand sidebar'}
             </TooltipContent>
           </Tooltip>
         </div>
@@ -82,13 +84,18 @@ export function Sidebar() {
                 <TooltipTrigger asChild>
                   <button
                     type="button"
-                    onClick={() => setActiveItem(item.id)}
+                    onClick={() => {
+                      setActiveItem(item.id);
+                      if (PANEL_ICONS.has(item.id)) {
+                        onPanelChange?.(item.id as 'files' | 'git');
+                      }
+                    }}
                     className={cn(
-                      "relative flex h-11 w-11 items-center justify-center rounded-md text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary",
-                      isActive && "text-text-primary"
+                      'relative flex h-11 w-11 items-center justify-center rounded-md text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary',
+                      isActive && 'text-text-primary',
                     )}
                     aria-label={item.label}
-                    aria-current={isActive ? "page" : undefined}
+                    aria-current={isActive ? 'page' : undefined}
                   >
                     {isActive && (
                       <span
@@ -98,15 +105,11 @@ export function Sidebar() {
                     )}
                     <Icon className="h-5 w-5" />
                     {expanded && (
-                      <span className="ml-3 flex-1 text-left text-sm">
-                        {item.label}
-                      </span>
+                      <span className="ml-3 flex-1 text-left text-sm">{item.label}</span>
                     )}
                   </button>
                 </TooltipTrigger>
-                {!expanded && (
-                  <TooltipContent side="right">{item.label}</TooltipContent>
-                )}
+                {!expanded && <TooltipContent side="right">{item.label}</TooltipContent>}
               </Tooltip>
             );
           })}
@@ -123,13 +126,18 @@ export function Sidebar() {
                 <TooltipTrigger asChild>
                   <button
                     type="button"
-                    onClick={() => setActiveItem(item.id)}
+                    onClick={() => {
+                      setActiveItem(item.id);
+                      if (PANEL_ICONS.has(item.id)) {
+                        onPanelChange?.(item.id as 'files' | 'git');
+                      }
+                    }}
                     className={cn(
-                      "relative flex h-11 w-11 items-center justify-center rounded-md text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary",
-                      isActive && "text-text-primary"
+                      'relative flex h-11 w-11 items-center justify-center rounded-md text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary',
+                      isActive && 'text-text-primary',
                     )}
                     aria-label={item.label}
-                    aria-current={isActive ? "page" : undefined}
+                    aria-current={isActive ? 'page' : undefined}
                   >
                     {isActive && (
                       <span
@@ -139,15 +147,11 @@ export function Sidebar() {
                     )}
                     <Icon className="h-5 w-5" />
                     {expanded && (
-                      <span className="ml-3 flex-1 text-left text-sm">
-                        {item.label}
-                      </span>
+                      <span className="ml-3 flex-1 text-left text-sm">{item.label}</span>
                     )}
                   </button>
                 </TooltipTrigger>
-                {!expanded && (
-                  <TooltipContent side="right">{item.label}</TooltipContent>
-                )}
+                {!expanded && <TooltipContent side="right">{item.label}</TooltipContent>}
               </Tooltip>
             );
           })}
