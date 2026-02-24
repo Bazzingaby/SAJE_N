@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 
 // ---------------------------------------------------------------------------
@@ -16,12 +16,22 @@ vi.mock('@xyflow/react', async () => {
     nodes: _nodes,
     edges: _edges,
     onInit,
+    onNodeContextMenu,
     ...rest
   }: {
     children?: React.ReactNode;
     nodes?: unknown[];
     edges?: unknown[];
     onInit?: (instance: unknown) => void;
+    onNodeContextMenu?: (
+      event: React.MouseEvent,
+      node: {
+        id: string;
+        type: string;
+        position: { x: number; y: number };
+        data: Record<string, unknown>;
+      },
+    ) => void;
     [key: string]: unknown;
   }) => {
     React.useEffect(() => {
@@ -29,7 +39,31 @@ vi.mock('@xyflow/react', async () => {
         onInit({ screenToFlowPosition: ({ x, y }: { x: number; y: number }) => ({ x, y }) });
       }
     }, [onInit]);
-    return React.createElement('div', { 'data-testid': 'reactflow', ...rest }, children);
+    const triggerContextMenu = () => {
+      if (typeof onNodeContextMenu === 'function') {
+        const ev = new MouseEvent('contextmenu', { bubbles: true, clientX: 100, clientY: 100 });
+        onNodeContextMenu(ev as unknown as React.MouseEvent, {
+          id: 'source-1',
+          type: 'source',
+          position: { x: 100, y: 200 },
+          data: { label: 'CSV Source' },
+        });
+      }
+    };
+    return React.createElement(
+      'div',
+      { 'data-testid': 'reactflow', ...rest },
+      React.createElement(
+        'button',
+        {
+          type: 'button',
+          'data-testid': 'trigger-node-context-menu',
+          onClick: triggerContextMenu,
+        },
+        'Open node menu',
+      ),
+      children,
+    );
   };
 
   const ReactFlowProvider = ({ children }: { children: React.ReactNode }) =>
@@ -187,5 +221,30 @@ describe('WorkflowCanvas', () => {
     expect(screen.getByLabelText('Drag Source node')).toBeInTheDocument();
     expect(screen.getByLabelText('Drag Transform node')).toBeInTheDocument();
     expect(screen.getByLabelText('Drag Branch node')).toBeInTheDocument();
+  });
+
+  it('node context menu shows Duplicate and Delete (S2.1)', () => {
+    render(<WorkflowCanvas />);
+    const trigger = screen.getByTestId('trigger-node-context-menu');
+    fireEvent.click(trigger);
+    expect(screen.getByRole('menu', { name: 'Node actions' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /duplicate/i })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
+  });
+
+  it('Delete in context menu removes node and connected edges (S2.1)', () => {
+    useWorkspaceStore.setState({
+      nodes: [
+        { id: 'source-1', type: 'source', position: { x: 0, y: 0 }, data: { label: 'A' } },
+        { id: 'transform-1', type: 'transform', position: { x: 100, y: 0 }, data: { label: 'B' } },
+      ],
+      edges: [{ id: 'e1', source: 'source-1', target: 'transform-1' }],
+    });
+    render(<WorkflowCanvas />);
+    fireEvent.click(screen.getByTestId('trigger-node-context-menu'));
+    fireEvent.click(screen.getByRole('menuitem', { name: /delete/i }));
+    const state = useWorkspaceStore.getState();
+    expect(state.nodes).toHaveLength(1);
+    expect(state.edges).toHaveLength(0);
   });
 });

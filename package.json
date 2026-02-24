@@ -10,6 +10,7 @@
   },
   "packageManager": "pnpm@9.15.9",
   "scripts": {
+    "collab:server": "node scripts/collab-server.mjs",
     "dev": "pnpm --filter @cosmos/web dev",
     "build": "pnpm --filter @cosmos/web build",
     "lint": "pnpm --filter @cosmos/web lint",
@@ -25,6 +26,7 @@
     "@commitlint/config-conventional": "^19.6.0",
     "husky": "^9.1.7",
     "lint-staged": "^15.3.0",
-    "prettier": "^3.4.2"
+    "prettier": "^3.4.2",
+    "ws": "^8.19.0"
   }
 }

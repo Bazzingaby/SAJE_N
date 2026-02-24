@@ -108,4 +108,14 @@ describe('WorkspaceStore', () => {
     expect(state.ui.sidebarOpen).toBe(false);
     expect(state.files).toHaveLength(1);
   });
+
+  it('persists canvasMode so it can be rehydrated (S2.5)', async () => {
+    useWorkspaceStore.getState().setCanvasMode('flow');
+    // Allow persist middleware to write
+    await new Promise((r) => setTimeout(r, 50));
+    const raw = localStorage.getItem('cosmos-workspace');
+    expect(raw).toBeTruthy();
+    const parsed = JSON.parse(raw!) as { state?: { canvasMode?: string } };
+    expect(parsed.state?.canvasMode).toBe('flow');
+  });
 });

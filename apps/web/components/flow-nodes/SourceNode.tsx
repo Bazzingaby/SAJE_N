@@ -3,19 +3,18 @@
 import type { NodeProps } from '@xyflow/react';
 import { Database } from 'lucide-react';
 import { BaseNode } from './BaseNode';
+import type { SourceNodeData as SourceNodeDataType } from '@/lib/pipeline/types';
 
-export interface SourceNodeData {
-  label?: string;
-  description?: string;
-  [key: string]: unknown;
-}
+export type SourceNodeData = SourceNodeDataType;
 
 /**
- * Source node — represents a data source in the workflow pipeline.
- * Green accent, Database icon, source handle only (right side).
+ * Source node — represents a data source in the workflow pipeline (S4.1).
+ * Green accent, Database icon, source handle only (right side). Uses config from pipeline types.
  */
 export function SourceNode({ data, selected }: NodeProps) {
   const nodeData = data as SourceNodeData;
+  const config = nodeData.config ?? {};
+  const desc = nodeData.description ?? (config.url || config.query || 'Data source');
 
   return (
     <BaseNode
@@ -26,7 +25,7 @@ export function SourceNode({ data, selected }: NodeProps) {
       showSourceHandle={true}
       showTargetHandle={false}
     >
-      <p className="text-xs text-text-secondary">{nodeData.description ?? 'Data source'}</p>
+      <p className="text-xs text-text-secondary">{desc}</p>
     </BaseNode>
   );
 }

@@ -1,9 +1,11 @@
-"use client";
+'use client';
 
-import { useCallback, useMemo } from "react";
-import { useWorkspaceStore } from "@/lib/store";
-import { cn } from "@/lib/utils";
-import { MonacoWrapper } from "./MonacoWrapper";
+import { useCallback, useMemo } from 'react';
+import { useWorkspaceStore } from '@/lib/store';
+import { cn } from '@/lib/utils';
+import { MonacoWrapper } from './MonacoWrapper';
+import type { InlineAIAction } from './MonacoWrapper';
+import { runAgent } from '@/lib/ai/agents';
 
 /**
  * Main Code canvas — renders a tab bar of open files and the Monaco editor
@@ -18,6 +20,7 @@ export function CodeCanvas() {
   const setActiveTab = useWorkspaceStore((s) => s.setActiveTab);
   const closeTab = useWorkspaceStore((s) => s.closeTab);
   const updateFileContent = useWorkspaceStore((s) => s.updateFileContent);
+  const llmConfig = useWorkspaceStore((s) => s.llmConfig);
 
   const activeTab = useMemo(
     () => openTabs.find((t) => t.id === activeTabId) ?? null,
@@ -27,10 +30,7 @@ export function CodeCanvas() {
   const activeFile = useMemo(() => {
     if (!activeTab) return null;
     // Recursively search the file tree
-    function findFile(
-      nodes: typeof files,
-      path: string,
-    ): (typeof files)[number] | null {
+    function findFile(nodes: typeof files, path: string): (typeof files)[number] | null {
       for (const node of nodes) {
         if (node.path === path) return node;
         if (node.children) {
@@ -52,6 +52,24 @@ export function CodeCanvas() {
     [activeTab, updateFileContent],
   );
 
+  const handleInlineAIRequest = useCallback(
+    async (action: InlineAIAction, selectedText: string): Promise<string> => {
+      const result = await runAgent(llmConfig, 'coder', {
+        instruction:
+          action === 'explain'
+            ? 'Explain this code.'
+            : action === 'refactor'
+              ? 'Refactor this code.'
+              : 'Suggest or write tests for this code.',
+        selectedText,
+        filePath: activeTab?.filePath,
+        language: activeFile?.language,
+      });
+      return result.content;
+    },
+    [llmConfig, activeTab, activeFile],
+  );
+
   // --- Empty state ---
   if (openTabs.length === 0) {
     return (
@@ -59,9 +77,7 @@ export function CodeCanvas() {
         data-testid="code-canvas-empty"
         className="flex h-full w-full flex-col items-center justify-center bg-bg-primary"
       >
-        <p className="text-sm text-text-secondary">
-          Open a file to start editing
-        </p>
+        <p className="text-sm text-text-secondary">Open a file to start editing</p>
       </div>
     );
   }
@@ -83,14 +99,14 @@ export function CodeCanvas() {
               aria-selected={isActive}
               tabIndex={isActive ? 0 : -1}
               className={cn(
-                "group flex h-9 min-w-[44px] cursor-pointer items-center gap-1.5 border-r border-border px-3 text-xs transition-colors select-none",
+                'group flex h-9 min-w-[44px] cursor-pointer items-center gap-1.5 border-r border-border px-3 text-xs transition-colors select-none',
                 isActive
-                  ? "bg-bg-primary text-text-primary border-b-2 border-b-accent-blue"
-                  : "text-text-secondary hover:bg-bg-tertiary",
+                  ? 'bg-bg-primary text-text-primary border-b-2 border-b-accent-blue'
+                  : 'text-text-secondary hover:bg-bg-tertiary',
               )}
               onClick={() => setActiveTab(tab.id)}
               onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
+                if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
                   setActiveTab(tab.id);
                 }
@@ -112,9 +128,9 @@ export function CodeCanvas() {
                 type="button"
                 aria-label={`Close ${tab.fileName}`}
                 className={cn(
-                  "ml-1 flex h-5 w-5 shrink-0 items-center justify-center rounded text-text-secondary hover:bg-bg-tertiary hover:text-text-primary",
-                  "opacity-0 group-hover:opacity-100 focus:opacity-100",
-                  isActive && "opacity-100",
+                  'ml-1 flex h-5 w-5 shrink-0 items-center justify-center rounded text-text-secondary hover:bg-bg-tertiary hover:text-text-primary',
+                  'opacity-0 group-hover:opacity-100 focus:opacity-100',
+                  isActive && 'opacity-100',
                 )}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -133,9 +149,10 @@ export function CodeCanvas() {
         {activeFile ? (
           <MonacoWrapper
             filePath={activeFile.path}
-            content={activeFile.content ?? ""}
-            language={activeFile.language ?? "plaintext"}
+            content={activeFile.content ?? ''}
+            language={activeFile.language ?? 'plaintext'}
             onChange={handleContentChange}
+            onInlineAIRequest={handleInlineAIRequest}
           />
         ) : (
           <div className="flex h-full items-center justify-center text-sm text-text-secondary">

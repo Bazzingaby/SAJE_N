@@ -1,9 +1,12 @@
-import { WorkspaceLayout } from "@/components/layout/WorkspaceLayout";
+import { WorkspaceLayout } from '@/components/layout/WorkspaceLayout';
 
-export default function WorkspaceRouteLayout({
+export default async function WorkspaceRouteLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: Promise<{ id: string }>;
 }) {
-  return <WorkspaceLayout>{children}</WorkspaceLayout>;
+  const { id } = await params;
+  return <WorkspaceLayout workspaceId={id}>{children}</WorkspaceLayout>;
 }

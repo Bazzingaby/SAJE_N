@@ -3,19 +3,18 @@
 import type { NodeProps } from '@xyflow/react';
 import { Wand2 } from 'lucide-react';
 import { BaseNode } from './BaseNode';
+import type { TransformNodeData as TransformNodeDataType } from '@/lib/pipeline/types';
 
-export interface TransformNodeData {
-  label?: string;
-  description?: string;
-  [key: string]: unknown;
-}
+export type TransformNodeData = TransformNodeDataType;
 
 /**
- * Transform node — processes/transforms data in the workflow pipeline.
- * Blue accent, Wand2 icon, both handles.
+ * Transform node — processes/transforms data in the workflow pipeline (S4.1).
+ * Blue accent, Wand2 icon, both handles. Uses config from pipeline types.
  */
 export function TransformNode({ data, selected }: NodeProps) {
   const nodeData = data as TransformNodeData;
+  const config = nodeData.config ?? {};
+  const desc = nodeData.description ?? (config.expression || 'Transform');
 
   return (
     <BaseNode
@@ -26,7 +25,9 @@ export function TransformNode({ data, selected }: NodeProps) {
       showSourceHandle={true}
       showTargetHandle={true}
     >
-      <p className="text-xs text-text-secondary">{nodeData.description ?? 'Transform'}</p>
+      <p className="text-xs text-text-secondary truncate" title={desc}>
+        {desc}
+      </p>
     </BaseNode>
   );
 }

@@ -31,11 +31,15 @@ const TERMINAL_THEME = {
 const WELCOME_MESSAGE = 'Welcome to Cosmos Terminal\r\n$ ';
 
 /**
- * TerminalPanel — xterm.js embedded terminal for the Cosmos workspace.
+ * TerminalPanel — xterm.js embedded terminal for the Cosmos workspace (S2.3).
+ *
+ * Current behaviour: local-echo MVP — input is echoed and Enter/Backspace
+ * are handled locally. No real shell/PTY yet. For a real terminal, connect
+ * to a WebSocket PTY endpoint (e.g. scripts/terminal-ws-server or API route)
+ * and attach the terminal to the socket.
  *
  * Mounts a full xterm.js Terminal instance into a container div, loads the
- * FitAddon so the terminal resizes with its parent panel, and wires up a
- * basic local-echo input handler (Enter → new prompt, Backspace → erase).
+ * FitAddon so the terminal resizes with its parent panel.
  *
  * A ResizeObserver keeps the terminal sized correctly whenever the bottom
  * panel is resized. The instance is fully disposed on unmount.

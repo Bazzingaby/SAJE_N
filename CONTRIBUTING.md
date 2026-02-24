@@ -5,10 +5,12 @@ Thank you for your interest in contributing! This guide will help you get starte
 ## How to Contribute
 
 ### Reporting Bugs
+
 - Use the [Bug Report template](.github/ISSUE_TEMPLATE/bug_report.md)
 - Include reproduction steps, expected vs actual behavior, and environment details
 
 ### Suggesting Features
+
 - Use the [Feature Request template](.github/ISSUE_TEMPLATE/feature_request.md)
 - Describe the problem your feature solves and any proposed solution
 
@@ -26,15 +28,15 @@ Thank you for your interest in contributing! This guide will help you get starte
 
 We use [Conventional Commits](https://www.conventionalcommits.org/):
 
-| Prefix | Use |
-|--------|-----|
-| `feat:` | New feature |
-| `fix:` | Bug fix |
-| `docs:` | Documentation only |
-| `style:` | Formatting, no logic change |
+| Prefix      | Use                                 |
+| ----------- | ----------------------------------- |
+| `feat:`     | New feature                         |
+| `fix:`      | Bug fix                             |
+| `docs:`     | Documentation only                  |
+| `style:`    | Formatting, no logic change         |
 | `refactor:` | Code restructure, no feature change |
-| `test:` | Adding/updating tests |
-| `chore:` | Build, tooling, dependencies |
+| `test:`     | Adding/updating tests               |
+| `chore:`    | Build, tooling, dependencies        |
 
 ### Coding Standards
 
@@ -45,6 +47,16 @@ We use [Conventional Commits](https://www.conventionalcommits.org/):
 - **Zustand** for state management
 - Components in `PascalCase`, utilities in `camelCase`
 - Files named to match their default export
+
+### AI-Assisted Development
+
+This project is designed to be built with AI agents (like Claude Code or Gemini CLI). Two critical files govern the workflow:
+
+1.  **[CLAUDE.md](./CLAUDE.md)**: The Project Command Center. Contains the mission statement, tech stack, and state machine.
+2.  **[AGENTS.md](./AGENTS.md)**: The Agentic Orchestration. Contains the current sprint's strict execution order and definition of done.
+3.  **[GEMINI.md](./GEMINI.md)**: The AI Context. Specifically for Gemini agents to maintain project state.
+
+**Always read these files before starting a task and update them as you finish.**
 
 ### Architecture Guidelines
 

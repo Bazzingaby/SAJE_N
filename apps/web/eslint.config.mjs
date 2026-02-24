@@ -17,8 +17,10 @@ const eslintConfig = [
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
+      '@next/next/no-html-link-for-pages': ['error', 'apps/web/app'],
     },
   },
+
 ];
 
 export default eslintConfig;

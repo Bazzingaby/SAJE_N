@@ -25,6 +25,8 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           partialize: (state) => ({
             projectId: state.projectId,
             canvasMode: state.canvasMode,
+            nodes: state.nodes,
+            edges: state.edges,
             ui: state.ui,
             llmConfig: state.llmConfig,
           }),

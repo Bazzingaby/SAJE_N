@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import {
   FileText,
   Search,
@@ -120,36 +121,55 @@ export function Sidebar({ onPanelChange, activePanel }: SidebarProps = {}) {
           {bottomItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeItem === item.id;
+            const isSettings = item.id === 'settings';
+
+            const content = (
+              <>
+                {isActive && (
+                  <span
+                    className="absolute left-0 top-1/2 h-6 w-0.5 -translate-y-1/2 rounded-r bg-accent-indigo"
+                    aria-hidden="true"
+                  />
+                )}
+                <Icon className="h-5 w-5" />
+                {expanded && <span className="ml-3 flex-1 text-left text-sm">{item.label}</span>}
+              </>
+            );
 
             return (
               <Tooltip key={item.id}>
                 <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveItem(item.id);
-                      if (PANEL_ICONS.has(item.id)) {
-                        onPanelChange?.(item.id as 'files' | 'git');
-                      }
-                    }}
-                    className={cn(
-                      'relative flex h-11 w-11 items-center justify-center rounded-md text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary',
-                      isActive && 'text-text-primary',
-                    )}
-                    aria-label={item.label}
-                    aria-current={isActive ? 'page' : undefined}
-                  >
-                    {isActive && (
-                      <span
-                        className="absolute left-0 top-1/2 h-6 w-0.5 -translate-y-1/2 rounded-r bg-accent-indigo"
-                        aria-hidden="true"
-                      />
-                    )}
-                    <Icon className="h-5 w-5" />
-                    {expanded && (
-                      <span className="ml-3 flex-1 text-left text-sm">{item.label}</span>
-                    )}
-                  </button>
+                  {isSettings ? (
+                    <Link
+                      href="/settings"
+                      className={cn(
+                        'relative flex h-11 w-11 items-center justify-center rounded-md text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary',
+                        expanded && 'w-full justify-start px-3',
+                      )}
+                      aria-label={item.label}
+                    >
+                      {content}
+                    </Link>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveItem(item.id);
+                        if (PANEL_ICONS.has(item.id)) {
+                          onPanelChange?.(item.id as 'files' | 'git');
+                        }
+                      }}
+                      className={cn(
+                        'relative flex h-11 w-11 items-center justify-center rounded-md text-text-secondary transition-colors hover:bg-bg-tertiary hover:text-text-primary',
+                        isActive && 'text-text-primary',
+                        expanded && 'w-full justify-start px-3',
+                      )}
+                      aria-label={item.label}
+                      aria-current={isActive ? 'page' : undefined}
+                    >
+                      {content}
+                    </button>
+                  )}
                 </TooltipTrigger>
                 {!expanded && <TooltipContent side="right">{item.label}</TooltipContent>}
               </Tooltip>

@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_COLLAB_SERVER_URL=ws://localhost:1234
+    restart: always
+
+  collab:
+    build: .
+    command: node scripts/collab-server.mjs
+    ports:
+      - '1234:1234'
+    environment:
+      - PORT=1234
+    restart: always

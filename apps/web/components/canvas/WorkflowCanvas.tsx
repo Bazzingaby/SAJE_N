@@ -15,9 +15,10 @@ import {
   type Edge,
   type Connection,
   type ReactFlowInstance,
+  type NodeMouseHandler,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Database, Wand2, Download, Bot, Code2, GitBranch } from 'lucide-react';
+import { Database, Wand2, Download, Bot, Code2, GitBranch, Copy, Trash2, Play } from 'lucide-react';
 import { SourceNode } from '@/components/flow-nodes/SourceNode';
 import { TransformNode } from '@/components/flow-nodes/TransformNode';
 import { SinkNode } from '@/components/flow-nodes/SinkNode';
@@ -25,6 +26,13 @@ import { AINode } from '@/components/flow-nodes/AINode';
 import { FunctionNode } from '@/components/flow-nodes/FunctionNode';
 import { BranchNode } from '@/components/flow-nodes/BranchNode';
 import { useWorkspaceStore } from '@/lib/store';
+import {
+  DEFAULT_SOURCE_CONFIG,
+  DEFAULT_TRANSFORM_CONFIG,
+  DEFAULT_SINK_CONFIG,
+} from '@/lib/pipeline/types';
+import { NodeConfigPanel } from '@/components/panels/NodeConfigPanel';
+import { runPipeline } from '@/lib/pipeline/runner';
 
 const nodeTypes = {
   source: SourceNode,
@@ -139,6 +147,13 @@ function WorkflowCanvasInner() {
 
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
+  const [contextMenuNode, setContextMenuNode] = useState<Node | null>(null);
+  const [contextMenuPosition, setContextMenuPosition] = useState<{ x: number; y: number } | null>(
+    null,
+  );
+  const [configPanelOpen, setConfigPanelOpen] = useState(false);
+  const [selectedNodeForConfig, setSelectedNodeForConfig] = useState<Node | null>(null);
+  const [runStatus, setRunStatus] = useState<{ success: boolean; message: string } | null>(null);
 
   const onConnect = useCallback(
     (connection: Connection) => {
@@ -162,9 +177,13 @@ function WorkflowCanvasInner() {
       });
 
       const id = `${type}-${++nodeIdCounter}`;
-      const defaultData = dataStr
-        ? (JSON.parse(dataStr) as Record<string, string>)
+      const parsed = dataStr
+        ? (JSON.parse(dataStr) as Record<string, unknown>)
         : { label: type, description: '' };
+      const defaultData: Record<string, unknown> = { ...parsed };
+      if (type === 'source') defaultData.config = DEFAULT_SOURCE_CONFIG;
+      else if (type === 'transform') defaultData.config = DEFAULT_TRANSFORM_CONFIG;
+      else if (type === 'sink') defaultData.config = DEFAULT_SINK_CONFIG;
 
       const newNode: Node = { id, type, position, data: defaultData };
       const newNodes = [...nodes, newNode];
@@ -179,6 +198,87 @@ function WorkflowCanvasInner() {
     event.dataTransfer.dropEffect = 'move';
   }, []);
 
+  const onNodeClick: NodeMouseHandler = useCallback((_, node) => {
+    if (['source', 'transform', 'sink'].includes(node.type ?? '')) {
+      setSelectedNodeForConfig(node);
+      setConfigPanelOpen(true);
+    }
+  }, []);
+
+  const onNodeContextMenu: NodeMouseHandler = useCallback((event, node) => {
+    event.preventDefault();
+    setContextMenuNode(node);
+    setContextMenuPosition({ x: event.clientX, y: event.clientY });
+  }, []);
+
+  const handleRunPipeline = useCallback(async () => {
+    setRunStatus(null);
+    const result = await runPipeline(nodes, edges);
+    if (result.success) {
+      setRunStatus({ success: true, message: 'Pipeline ran successfully.' });
+    } else {
+      setRunStatus({ success: false, message: result.error ?? 'Run failed' });
+    }
+  }, [nodes, edges]);
+
+  const handleConfigSave = useCallback(
+    (nodeId: string, data: Record<string, unknown>) => {
+      const newNodes = nodes.map((n) =>
+        n.id === nodeId ? { ...n, data: { ...n.data, ...data } } : n,
+      );
+      setNodes(newNodes);
+      setStoreNodes(newNodes);
+      setSelectedNodeForConfig(null);
+    },
+    [nodes, setNodes, setStoreNodes],
+  );
+
+  const closeContextMenu = useCallback(() => {
+    setContextMenuNode(null);
+    setContextMenuPosition(null);
+  }, []);
+
+  const handleDuplicateNode = useCallback(() => {
+    if (!contextMenuNode) return;
+    const existingNode = nodes.find((n) => n.id === contextMenuNode.id);
+    if (!existingNode) return;
+    const newId = `${existingNode.type}-${++nodeIdCounter}`;
+    const newNode: Node = {
+      ...existingNode,
+      id: newId,
+      position: {
+        x: existingNode.position.x + 40,
+        y: existingNode.position.y + 40,
+      },
+      data: { ...existingNode.data },
+    };
+    const newNodes = [...nodes, newNode];
+    setNodes(newNodes);
+    setStoreNodes(newNodes);
+    closeContextMenu();
+  }, [contextMenuNode, nodes, setNodes, setStoreNodes, closeContextMenu]);
+
+  const handleDeleteNode = useCallback(() => {
+    if (!contextMenuNode) return;
+    const nodeId = contextMenuNode.id;
+    const newNodes = nodes.filter((n) => n.id !== nodeId);
+    const newEdges = edges.filter((e) => e.source !== nodeId && e.target !== nodeId);
+    setNodes(newNodes);
+    setEdges(newEdges);
+    setStoreNodes(newNodes);
+    setStoreEdges(newEdges);
+    closeContextMenu();
+  }, [
+    contextMenuNode,
+    nodes,
+    edges,
+    setNodes,
+    setEdges,
+    setStoreNodes,
+    setStoreEdges,
+    closeContextMenu,
+  ]);
+
   return (
     <div className="flex h-full w-full" data-testid="workflow-canvas">
       {/* Node palette */}
@@ -190,6 +290,24 @@ function WorkflowCanvasInner() {
         <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-text-secondary">
           Nodes
         </p>
+        <button
+          type="button"
+          onClick={handleRunPipeline}
+          className="flex min-h-[44px] items-center justify-center gap-2 rounded-md border border-accent-green/50 bg-accent-green/10 text-accent-green transition-colors hover:bg-accent-green/20"
+          aria-label="Run pipeline"
+          data-testid="run-pipeline-button"
+        >
+          <Play size={16} />
+          Run
+        </button>
+        {runStatus && (
+          <p
+            className={runStatus.success ? 'text-xs text-accent-green' : 'text-xs text-red-400'}
+            role="status"
+          >
+            {runStatus.message}
+          </p>
+        )}
         {PALETTE_ITEMS.map((item) => (
           <div
             key={item.type}
@@ -234,6 +352,8 @@ function WorkflowCanvasInner() {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onNodeClick={onNodeClick}
+          onNodeContextMenu={onNodeContextMenu}
           onInit={setReactFlowInstance}
           nodeTypes={nodeTypes}
           fitView
@@ -244,6 +364,53 @@ function WorkflowCanvasInner() {
           <MiniMap nodeColor={(node) => NODE_COLORS[node.type ?? ''] ?? '#6366f1'} />
         </ReactFlow>
       </div>
+
+      {/* Node context menu (S2.1): Duplicate / Delete — fixed position for right-click/long-press */}
+      {contextMenuNode && contextMenuPosition && (
+        <>
+          <div
+            className="fixed inset-0 z-40"
+            role="presentation"
+            onClick={closeContextMenu}
+            onContextMenu={(e) => e.preventDefault()}
+          />
+          <div
+            className="fixed z-50 min-w-[160px] rounded-md border border-border bg-bg-secondary py-1 shadow-lg"
+            style={{ left: contextMenuPosition.x, top: contextMenuPosition.y }}
+            role="menu"
+            aria-label="Node actions"
+          >
+            <button
+              type="button"
+              role="menuitem"
+              className="flex min-h-[44px] w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-sm text-text-primary hover:bg-bg-tertiary"
+              onClick={handleDuplicateNode}
+            >
+              <Copy className="h-4 w-4 shrink-0" aria-hidden />
+              Duplicate
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              className="flex min-h-[44px] w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-sm text-red-400 hover:bg-bg-tertiary"
+              onClick={handleDeleteNode}
+            >
+              <Trash2 className="h-4 w-4 shrink-0" aria-hidden />
+              Delete
+            </button>
+          </div>
+        </>
+      )}
+
+      <NodeConfigPanel
+        node={selectedNodeForConfig}
+        open={configPanelOpen}
+        onOpenChange={(open) => {
+          setConfigPanelOpen(open);
+          if (!open) setSelectedNodeForConfig(null);
+        }}
+        onSave={handleConfigSave}
+      />
     </div>
   );
 }

@@ -27,7 +27,7 @@ Every Claude Code session operates as a full engineering team:
 [ARCHITECTURE_COMPLETE] ✅ done
        │
        ▼
-[SPRINT_1_FOUNDATION] ✅ done (21/21pts) ← current state
+[SPRINT_1_FOUNDATION] ✅ done (21/21pts)
                         S1.1 Next.js setup (3pts) ✅
                         S1.2 Monaco + touch (5pts) ✅
                         S1.3 File explorer (3pts) ✅
@@ -36,35 +36,39 @@ Every Claude Code session operates as a full engineering team:
                         S1.6 Zustand store (5pts) ✅
        │                                    = 21pts
        ▼
-[SPRINT_2_CANVAS_COLLAB] → S2.1 ReactFlow canvas (8pts)
-                           S2.2 Yjs collaboration (5pts)
-                           S2.3 Terminal xterm.js (5pts)
-                           S2.4 Git panel (3pts)
-                           S2.5 Mode switching (3pts)
+[SPRINT_2_CANVAS_COLLAB] ✅ done (24/24pts)
+                           S2.1 ReactFlow canvas (8pts) ✅
+                           S2.2 Yjs collaboration (5pts) ✅
+                           S2.3 Terminal xterm.js (5pts) ✅
+                           S2.4 Git panel (3pts) ✅
+                           S2.5 Mode switching (3pts) ✅
        │                                    = 24pts
        ▼
-[SPRINT_3_AI] → S3.1 AI Router (5pts)
-                S3.2 AI Chat panel (5pts)
-                S3.3 Inline AI (5pts)
-                S3.4 Agent framework (3pts)
-                S3.5 Settings page (3pts)
+[SPRINT_3_AI] ✅ done (21/21pts)
+                S3.1 AI Router (5pts) ✅
+                S3.2 AI Chat panel (5pts) ✅
+                S3.3 Inline AI (5pts) ✅
+                S3.4 Agent framework (3pts) ✅
+                S3.5 Settings page (3pts) ✅
        │                                    = 21pts
        ▼
-[SPRINT_4_DATA_PIPELINES] → S4.1 Flow nodes (5pts)
-                             S4.2 Node config panels (5pts)
-                             S4.3 Pipeline runner (5pts)
-                             S4.4 Data canvas (3pts)
-                             S4.5 SQL console (3pts)
+[SPRINT_4_DATA_PIPELINES] ✅ done (21/21pts)
+                             S4.1 Flow nodes (5pts) ✅
+                             S4.2 Node config panels (5pts) ✅
+                             S4.3 Pipeline runner (5pts) ✅
+                             S4.4 Data canvas (3pts) ✅
+                             S4.5 SQL console (3pts) ✅
        │                                    = 21pts
        ▼
-[SPRINT_5_DESIGN_POLISH] → S5.1 Design canvas (8pts)
-                            S5.2 Pencil + handwriting (5pts)
-                            S5.3 Board canvas (3pts)
-                            S5.4 Docker setup (3pts)
-                            S5.5 Documentation (3pts)
+[SPRINT_5_DESIGN_POLISH] ✅ done (22/22pts)
+                            S5.1 Design canvas (8pts) ✅
+                            S5.2 Pencil + handwriting (5pts) ✅
+                            S5.3 Board canvas (3pts) ✅
+                            S5.4 Docker setup (3pts) ✅
+                            S5.5 Documentation (3pts) ✅
        │                                    = 22pts
        ▼
-[SPRINT_6_LAUNCH] → S6.1 CI/CD (5pts)
+[SPRINT_6_LAUNCH] → S6.1 CI/CD (5pts) ← current state
                      S6.2 Landing page (3pts)
                      S6.3 Demo workspace (3pts)
                      S6.4 Community (2pts)
@@ -74,7 +78,7 @@ Every Claude Code session operates as a full engineering team:
 [MVP_COMPLETE]                        Total = 125pts
 ```
 
-**Current State: `SPRINT_1_FOUNDATION` complete — Ready for Sprint 2**
+**Current State: `SPRINT_4_DATA_PIPELINES` complete — Ready for Sprint 5 (Design & Polish)**
 
 ## Execution Protocol
 
@@ -88,6 +92,7 @@ Every Claude Code session operates as a full engineering team:
 ## Interruption & Restart Recovery
 
 When resuming after an interruption:
+
 1. `git log --oneline -20` — see what was last completed
 2. `git status` — check for uncommitted work
 3. Read this file's Project State Machine — identify current sprint/story
@@ -100,12 +105,20 @@ When resuming after an interruption:
 
 ```bash
 pnpm install              # Install dependencies (pnpm v9, Node 20 required)
-pnpm dev                  # Development server (Next.js 15)
+pnpm dev                  # Development server (Next.js 15, runs apps/web)
 pnpm build                # Production build
 pnpm lint                 # ESLint
 pnpm typecheck            # TypeScript strict checking
-pnpm test                 # Run all tests
-pnpm test -- --watch      # Watch mode for TDD
+pnpm test                 # Run all tests (Vitest, jsdom environment)
+pnpm test:watch           # Watch mode for TDD
+pnpm test:coverage        # Coverage report (60% threshold; lcov + text)
+pnpm collab:server        # Start Yjs WebSocket server on port 1234 (COLLAB_PORT env override)
+```
+
+Run a single test file:
+
+```bash
+pnpm --filter @cosmos/web test -- __tests__/pipeline/runner.test.ts
 ```
 
 CI pipeline order: lint → typecheck → test → build.
@@ -147,7 +160,7 @@ SERVER (Next.js)   │
 └──────────────────────────────────────────┘
 ```
 
-### Target Project Structure
+### Project Structure
 
 ```
 apps/web/
@@ -164,29 +177,43 @@ apps/web/
 │   └── ui/                       # shadcn/ui components
 ├── lib/
 │   ├── ai/                       # router.ts + agents/ (conductor, coder, designer, etc.)
-│   ├── collab/                   # yjs-provider.ts, awareness.ts
-│   ├── pipeline/                 # runner.ts, nodes.ts, scheduler.ts
-│   ├── store/                    # workspace.ts, files.ts, agents.ts (Zustand)
-│   └── utils/                    # handwriting.ts, touch.ts, codegen.ts
-└── styles/globals.css
+│   ├── collab/                   # yjs-provider.ts, awareness.ts, CollabContext.tsx
+│   ├── pipeline/                 # runner.ts, nodes.ts, types.ts
+│   └── store/
+│       ├── workspace-store.ts    # Single Zustand store (devtools + immer + persist)
+│       ├── types.ts
+│       └── slices/               # workspace, files, canvas, agents, ui
+└── __tests__/                    # Vitest tests (mirror lib/ and components/ structure)
 
-packages/
-├── cosmos-agents/                # Agent framework (standalone)
-├── cosmos-pipeline/              # Pipeline runner (standalone)
-└── cosmos-ui/                    # Shared UI components
+packages/                         # Stub standalone packages (not published yet)
+├── cosmos-agents/
+├── cosmos-pipeline/
+└── cosmos-ui/
+scripts/
+└── collab-server.mjs             # Yjs WebSocket broadcast server
 ```
+
+**Path aliases** (`@` = `apps/web/`; `@cosmos/ui`, `@cosmos/agents`, `@cosmos/pipeline` = `packages/*/src`)
 
 ### Five Canvas Modes
 
-| Mode | Library | Accent Color | Purpose |
-|------|---------|-------------|---------|
-| **Code** | Monaco | `#3b82f6` blue | Touch-optimized editing, inline AI, pencil annotations, terminal, git |
-| **Design** | Fabric.js | `#a855f7` purple | Infinite canvas, component library, code export, sketch→component |
-| **Workflow** | ReactFlow | `#22c55e` green | Visual node pipeline editor, 30+ node types, DAG execution |
-| **Data** | Custom | `#f59e0b` amber | SQL console, table viewer, chart builder, data profiling |
-| **Board** | Custom | `#ec4899` pink | Kanban, sprint planning, AI agent tracking |
+| Mode         | Library   | Accent Color     | Purpose                                                               |
+| ------------ | --------- | ---------------- | --------------------------------------------------------------------- |
+| **Code**     | Monaco    | `#3b82f6` blue   | Touch-optimized editing, inline AI, pencil annotations, terminal, git |
+| **Design**   | Fabric.js | `#a855f7` purple | Infinite canvas, component library, code export, sketch→component     |
+| **Workflow** | ReactFlow | `#22c55e` green  | Visual node pipeline editor, 30+ node types, DAG execution            |
+| **Data**     | Custom    | `#f59e0b` amber  | SQL console, table viewer, chart builder, data profiling              |
+| **Board**    | Custom    | `#ec4899` pink   | Kanban, sprint planning, AI agent tracking                            |
 
 AI elements use `#6366f1` indigo. Background is `#0a0a0f`.
+
+### AI Router
+
+`lib/ai/router.ts` — pure client-side (~217 lines). `chat(config, messages, options?, onStream?)` dispatches to OpenAI-compatible endpoints or Anthropic. Streaming is SSE-based. LLM config (provider, model, apiKey, baseUrl) lives in the Zustand store (`llmConfig` slice, persisted to localStorage). Never proxied through Next.js API; no server-side API key storage.
+
+### Zustand Store
+
+`lib/store/workspace-store.ts` — single `useWorkspaceStore` with 5 slices merged via immer + persist + devtools. Persisted keys: `projectId`, `canvasMode`, `nodes`, `edges`, `ui`, `llmConfig` (localStorage key: `cosmos-workspace`). Slices: **workspace** (projectId, mode), **files** (tree, active file), **canvas** (nodes, edges), **agents** (agent states), **ui** (panels, settings).
 
 ### AI Agent System
 
@@ -194,7 +221,7 @@ AI elements use `#6366f1` indigo. Background is `#0a0a0f`.
 
 ### Pipeline Engine
 
-Nodes: Sources → Transforms → Sinks + Control Flow. Execution: parse DAG → topological sort → validate → parallel execute → SSE logs → PostgreSQL history.
+`lib/pipeline/runner.ts` — Kahn's algorithm topological sort → sequential node execution. Node types: `source` → `transform` → `sink`. Outputs passed between nodes via `DataPayload`. Execution returns `RunResult { success, nodeOutputs, error }`.
 
 ## Design Constraints
 
@@ -216,12 +243,12 @@ Nodes: Sources → Transforms → Sinks + Control Flow. Execution: parse DAG →
 
 ## Key Documentation
 
-| Document | Path |
-|----------|------|
-| PRD + User Stories | `docs/prd/product-requirements.md` |
-| V2 Architecture | `docs/v2-architecture/cosmos-v2-architecture.md` |
-| System Design | `blueprints/system-design/system-architecture.md` |
-| Tech Stack Rationale | `blueprints/system-design/tech-stack-rationale.md` |
-| Pipeline Engine | `blueprints/data-flow/pipeline-engine.md` |
-| AI Agent System | `blueprints/data-flow/ai-agent-system.md` |
-| Touch UI Spec | `blueprints/ui-wireframes/interface-specification.md` |
+| Document             | Path                                                  |
+| -------------------- | ----------------------------------------------------- |
+| PRD + User Stories   | `docs/prd/product-requirements.md`                    |
+| V2 Architecture      | `docs/v2-architecture/cosmos-v2-architecture.md`      |
+| System Design        | `blueprints/system-design/system-architecture.md`     |
+| Tech Stack Rationale | `blueprints/system-design/tech-stack-rationale.md`    |
+| Pipeline Engine      | `blueprints/data-flow/pipeline-engine.md`             |
+| AI Agent System      | `blueprints/data-flow/ai-agent-system.md`             |
+| Touch UI Spec        | `blueprints/ui-wireframes/interface-specification.md` |

@@ -9,6 +9,7 @@ import { BottomPanel } from './BottomPanel';
 import { TouchToolbar } from '@/components/toolbar/TouchToolbar';
 import { FileExplorer } from '@/components/panels/FileExplorer';
 import { GitPanel } from '@/components/panels/GitPanel';
+import { CollabProviderWrapper } from '@/lib/collab/CollabContext';
 
 type SidebarPanel = 'files' | 'git';
 
@@ -35,12 +36,18 @@ function ResizeHandle({ direction = 'horizontal' }: { direction?: 'horizontal' |
   );
 }
 
-export function WorkspaceLayout({ children }: { children?: React.ReactNode }) {
+export function WorkspaceLayout({
+  children,
+  workspaceId,
+}: {
+  children?: React.ReactNode;
+  workspaceId?: string;
+}) {
   const [activeSidebarPanel, setActiveSidebarPanel] = useState<SidebarPanel>('files');
 
-  return (
+  const content = (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-bg-primary">
-      {/* Main panel area — subtract 64px for toolbar */}
+      {/* Main panel area - subtract 64px for toolbar */}
       <div className="flex-1 overflow-hidden pb-16">
         <PanelGroup direction="horizontal" className="h-full">
           {/* Icon rail */}
@@ -91,8 +98,16 @@ export function WorkspaceLayout({ children }: { children?: React.ReactNode }) {
         </PanelGroup>
       </div>
 
-      {/* Touch toolbar — fixed at bottom */}
+      {/* Touch toolbar - fixed at bottom */}
       <TouchToolbar />
     </div>
+  );
+
+  return workspaceId ? (
+    <CollabProviderWrapper roomId={workspaceId} enabled>
+      {content}
+    </CollabProviderWrapper>
+  ) : (
+    content
   );
 }
