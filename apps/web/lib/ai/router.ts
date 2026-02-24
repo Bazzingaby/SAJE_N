@@ -15,13 +15,17 @@ function getRequestUrl(config: LLMConfig): string {
     case 'openai':
       return OPENAI_URL;
     case 'openrouter':
-      return OPENROUTER_URL;
+      return typeof window !== 'undefined' ? '/api/openrouter' : OPENROUTER_URL;
     case 'groq':
-      return GROQ_URL;
+      return typeof window !== 'undefined' ? '/api/groq' : GROQ_URL;
+    case 'gemini':
+      return typeof window !== 'undefined'
+        ? '/api/gemini'
+        : 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
     case 'ollama':
       return 'http://localhost:11434/v1/chat/completions';
     case 'anthropic':
-      return ANTHROPIC_URL;
+      return typeof window !== 'undefined' ? '/api/anthropic' : ANTHROPIC_URL;
     case 'huggingface':
     case 'custom':
       return config.baseUrl || OPENAI_URL;

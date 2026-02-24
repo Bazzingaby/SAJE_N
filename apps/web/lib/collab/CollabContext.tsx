@@ -5,7 +5,15 @@ import type { Doc } from 'yjs';
 import type { CollabProvider } from './yjs-provider';
 import { createCollabProvider, resetCollabProvider } from './yjs-provider';
 
-const COLLAB_SERVER_URL = process.env.NEXT_PUBLIC_COLLAB_SERVER_URL || 'ws://localhost:1234';
+const getCollabServerUrl = () => {
+  if (process.env.NEXT_PUBLIC_COLLAB_SERVER_URL) {
+    return process.env.NEXT_PUBLIC_COLLAB_SERVER_URL;
+  }
+  if (typeof window !== 'undefined') {
+    return `ws://${window.location.hostname}:1234`;
+  }
+  return 'ws://localhost:1234';
+};
 
 interface CollabContextValue {
   doc: Doc | null;
@@ -54,7 +62,7 @@ export function CollabProviderWrapper({
 
     createCollabProvider({
       roomId,
-      serverUrl: COLLAB_SERVER_URL,
+      serverUrl: getCollabServerUrl(),
       enabled: true,
     }).then((c) => {
       collab = c;

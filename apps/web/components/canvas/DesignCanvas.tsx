@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import * as fabric from 'fabric';
 import { cn } from '@/lib/utils';
-import { Square, Circle, Type, Code, Pencil, MousePointer2 } from 'lucide-react';
+import { Square, Circle, Type, Code, Pencil, MousePointer2, CreditCard, SquareTerminal, ArrowUpToLine, ArrowDownToLine, View, Undo, Trash2, Wand2 } from 'lucide-react';
+import { extractCanvasStrokes, processHandwriting } from '@/lib/utils/handwriting';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -26,31 +27,46 @@ export function DesignCanvas() {
     if (!fabricRef.current) return '';
     const objects = fabricRef.current.getObjects();
 
-    const elements = objects
-      .map((obj) => {
-        const left = Math.round(obj.left);
-        const top = Math.round(obj.top);
-        const width = Math.round(obj.width * (obj.scaleX || 1));
-        const height = Math.round(obj.height * (obj.scaleY || 1));
-        const fill = obj.fill as string;
+    const renderObject = (obj: any): string => {
+      const left = Math.round(obj.left || 0);
+      const top = Math.round(obj.top || 0);
+      const width = Math.round(obj.width * (obj.scaleX || 1));
+      const height = Math.round(obj.height * (obj.scaleY || 1));
+      const fill = obj.fill as string;
 
-        if (obj.type === 'rect') {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const rx = (obj as any).rx || 0;
-          return `<div className="absolute" style={{ left: '${left}px', top: '${top}px', width: '${width}px', height: '${height}px', backgroundColor: '${fill}', borderRadius: '${rx}px' }} />`;
-        }
-        if (obj.type === 'circle') {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const radius = Math.round((obj as any).radius * (obj.scaleX || 1));
-          return `<div className="absolute rounded-full" style={{ left: '${left}px', top: '${top}px', width: '${radius * 2}px', height: '${radius * 2}px', backgroundColor: '${fill}' }} />`;
-        }
-        if (obj.type === 'textbox' || obj.type === 'text') {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          return `<div className="absolute" style={{ left: '${left}px', top: '${top}px', width: '${width}px', color: '${fill}', fontSize: '${(obj as any).fontSize}px', textAlign: '${(obj as any).textAlign}' }}>${(obj as any).text}</div>`;
-        }
-        return `<!-- ${obj.type} not yet supported in codegen -->`;
-      })
-      .join('\n      ');
+      if (obj.name === 'cosmos-button') {
+        return `<button className="absolute items-center justify-center bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors" style={{ left: '${left}px', top: '${top}px', width: '${width}px', height: '${height}px' }}>Button</button>`;
+      }
+      if (obj.name === 'cosmos-card') {
+        return `<div className="absolute rounded-xl border border-slate-700 bg-slate-900 shadow-xl" style={{ left: '${left}px', top: '${top}px', width: '${width}px', height: '${height}px' }} />`;
+      }
+      if (obj.name === 'cosmos-input') {
+        return `<input className="absolute rounded-md border border-slate-700 bg-black px-3 py-2 text-sm text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Placeholder..." style={{ left: '${left}px', top: '${top}px', width: '${width}px', height: '${height}px' }} />`;
+      }
+
+      if (obj.type === 'group') {
+        const groupLeft = left;
+        const groupTop = top;
+        // Basic grouping logic for code generation
+        return `<div className="absolute" style={{ left: '${groupLeft}px', top: '${groupTop}px', width: '${width}px', height: '${height}px' }}>
+          {/* Group Content exported as a generic container */}
+        </div>`;
+      }
+      if (obj.type === 'rect') {
+        const rx = obj.rx || 0;
+        return `<div className="absolute" style={{ left: '${left}px', top: '${top}px', width: '${width}px', height: '${height}px', backgroundColor: '${fill}', borderRadius: '${rx}px' }} />`;
+      }
+      if (obj.type === 'circle') {
+        const radius = Math.round(obj.radius * (obj.scaleX || 1));
+        return `<div className="absolute rounded-full" style={{ left: '${left}px', top: '${top}px', width: '${radius * 2}px', height: '${radius * 2}px', backgroundColor: '${fill}' }} />`;
+      }
+      if (obj.type === 'textbox' || obj.type === 'text') {
+        return `<div className="absolute" style={{ left: '${left}px', top: '${top}px', width: '${width}px', color: '${fill}', fontSize: '${obj.fontSize}px', textAlign: '${obj.textAlign}' }}>${obj.text}</div>`;
+      }
+      return `<!-- ${obj.type} not yet supported in codegen -->`;
+    };
+
+    const elements = objects.map(renderObject).join('\n      ');
 
     return `export function ExportedComponent() {
   return (
@@ -80,7 +96,59 @@ export function DesignCanvas() {
     }
   };
 
-  const addObject = (type: 'rect' | 'circle' | 'text') => {
+  const groupSelection = async () => {
+    if (!fabricRef.current) return;
+    const canvas = fabricRef.current;
+    if (!canvas.getActiveObject()) return;
+
+    const activeObject = canvas.getActiveObject();
+    if (activeObject?.type === 'activeSelection') {
+      const selection = activeObject as fabric.ActiveSelection;
+      const objects = selection.removeAll();
+      canvas.discardActiveObject();
+      const group = new fabric.Group(objects);
+      canvas.add(group);
+      canvas.setActiveObject(group);
+      canvas.requestRenderAll();
+    }
+  };
+
+  const ungroupSelection = async () => {
+    if (!fabricRef.current) return;
+    const canvas = fabricRef.current;
+    if (!canvas.getActiveObject()) return;
+
+    const activeObject = canvas.getActiveObject();
+    if (activeObject?.type === 'group') {
+      const group = activeObject as fabric.Group;
+      const objects = group.removeAll();
+      canvas.remove(group);
+      canvas.add(...objects);
+      const selection = new fabric.ActiveSelection(objects);
+      canvas.setActiveObject(selection);
+      canvas.requestRenderAll();
+    }
+  };
+
+  const bringToFront = () => {
+    const canvas = fabricRef.current;
+    const obj = canvas?.getActiveObject();
+    if (canvas && obj) {
+      canvas.bringObjectToFront(obj);
+      canvas.requestRenderAll();
+    }
+  };
+
+  const sendToBack = () => {
+    const canvas = fabricRef.current;
+    const obj = canvas?.getActiveObject();
+    if (canvas && obj) {
+      canvas.sendObjectToBack(obj);
+      canvas.requestRenderAll();
+    }
+  };
+
+  const addObject = (type: 'rect' | 'circle' | 'text' | 'button' | 'card' | 'input') => {
     if (!fabricRef.current) return;
     const canvas = fabricRef.current;
 
@@ -125,6 +193,37 @@ export function DesignCanvas() {
           textAlign: 'center',
         });
         break;
+      case 'button':
+        {
+          const bg = new fabric.Rect({
+            width: 120, height: 44, fill: '#3b82f6', rx: 8, ry: 8, originX: 'center', originY: 'center'
+          });
+          const textEl = new fabric.Textbox('Button', {
+            fontSize: 16, fill: '#ffffff', textAlign: 'center', originX: 'center', originY: 'center', width: 100
+          });
+          obj = new fabric.Group([bg, textEl], { left: center.x - 60, top: center.y - 22 });
+          obj.set('name', 'cosmos-button');
+        }
+        break;
+      case 'card':
+        obj = new fabric.Rect({
+          left: center.x - 125, top: center.y - 100, width: 250, height: 200, fill: '#0f172a', rx: 12, ry: 12,
+          stroke: '#334155', strokeWidth: 1
+        });
+        obj.set('name', 'cosmos-card');
+        break;
+      case 'input':
+        {
+          const bg = new fabric.Rect({
+            width: 200, height: 44, fill: '#000000', rx: 6, ry: 6, stroke: '#334155', strokeWidth: 1, originX: 'center', originY: 'center'
+          });
+          const textEl = new fabric.Textbox('Placeholder...', {
+            fontSize: 14, fill: '#94a3b8', originX: 'center', originY: 'center', width: 180, textAlign: 'left'
+          });
+          obj = new fabric.Group([bg, textEl], { left: center.x - 100, top: center.y - 22 });
+          obj.set('name', 'cosmos-input');
+        }
+        break;
       default:
         return;
     }
@@ -132,6 +231,37 @@ export function DesignCanvas() {
     canvas.add(obj);
     canvas.setActiveObject(obj);
     canvas.requestRenderAll();
+  };
+
+  const undoLastAction = () => {
+    if (!fabricRef.current) return;
+    const canvas = fabricRef.current;
+    const objects = canvas.getObjects();
+    if (objects.length > 0) {
+      const objToRemove = objects[objects.length - 1];
+      if (objToRemove) {
+        canvas.remove(objToRemove);
+        canvas.requestRenderAll();
+      }
+    }
+  };
+
+  const clearCanvas = () => {
+    if (!fabricRef.current) return;
+    fabricRef.current.clear();
+    fabricRef.current.backgroundColor = '#0a0a0f';
+    fabricRef.current.requestRenderAll();
+  };
+
+  const analyzeCanvasStrokes = async () => {
+    if (!fabricRef.current) return;
+    const strokes = extractCanvasStrokes(fabricRef.current);
+    const result = await processHandwriting(strokes);
+    if (result) {
+      alert(result);
+    } else {
+      alert('No handwriting strokes detected.');
+    }
   };
 
   useEffect(() => {
@@ -316,10 +446,71 @@ export function DesignCanvas() {
         >
           <Type className="h-6 w-6" />
         </Button>
+        <div className="h-px bg-border my-1" />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-12 w-12 rounded-xl hover:bg-accent-purple/20 hover:text-accent-purple"
+          onClick={() => addObject('button')}
+          title="Add Button Component"
+        >
+          <SquareTerminal className="h-6 w-6" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-12 w-12 rounded-xl hover:bg-accent-purple/20 hover:text-accent-purple"
+          onClick={() => addObject('card')}
+          title="Add Card Component"
+        >
+          <CreditCard className="h-6 w-6" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-12 w-12 rounded-xl hover:bg-accent-purple/20 hover:text-accent-purple"
+          onClick={() => addObject('input')}
+          title="Add Input Component"
+        >
+          <View className="h-6 w-6" />
+        </Button>
+      </div>
+
+      {/* Layer Controls */}
+      <div className="absolute top-20 right-4 z-20 flex flex-col gap-2 rounded-2xl border border-border bg-bg-secondary/80 p-2 shadow-xl backdrop-blur-md">
+        <Button variant="ghost" size="icon" className="h-12 w-12 rounded-xl hover:bg-accent-purple/20 hover:text-accent-purple" onClick={groupSelection} title="Group Selection">
+          <div className="relative flex items-center justify-center font-bold">G</div>
+        </Button>
+        <Button variant="ghost" size="icon" className="h-12 w-12 rounded-xl hover:bg-accent-purple/20 hover:text-accent-purple" onClick={ungroupSelection} title="Ungroup Selection">
+          <div className="relative flex items-center justify-center font-bold text-red-400">U</div>
+        </Button>
+        <div className="h-px bg-border my-1" />
+        <Button variant="ghost" size="icon" className="h-12 w-12 rounded-xl hover:bg-accent-purple/20 hover:text-accent-purple" onClick={bringToFront} title="Bring to Front">
+          <ArrowUpToLine className="h-6 w-6" />
+        </Button>
+        <Button variant="ghost" size="icon" className="h-12 w-12 rounded-xl hover:bg-accent-purple/20 hover:text-accent-purple" onClick={sendToBack} title="Send to Back">
+          <ArrowDownToLine className="h-6 w-6" />
+        </Button>
+        <div className="h-px bg-border my-1" />
+        <Button variant="ghost" size="icon" className="h-12 w-12 rounded-xl hover:bg-accent-purple/20 hover:text-accent-purple" onClick={undoLastAction} title="Undo">
+          <Undo className="h-6 w-6" />
+        </Button>
+        <Button variant="ghost" size="icon" className="h-12 w-12 rounded-xl hover:bg-red-500/20 hover:text-red-400" onClick={clearCanvas} title="Clear Canvas">
+          <Trash2 className="h-6 w-6" />
+        </Button>
       </div>
 
       {/* Top Actions */}
       <div className="absolute top-4 right-4 z-20 flex gap-2">
+        <Button
+          variant="outline"
+          className="min-h-[44px] gap-2 border-border bg-bg-secondary/80 backdrop-blur-md text-accent-purple hover:bg-accent-purple/10"
+          onClick={analyzeCanvasStrokes}
+        >
+          <Wand2 className="h-4 w-4" />
+          <span>Analyze Sketch</span>
+        </Button>
+
         <Dialog>
           <DialogTrigger asChild>
             <Button

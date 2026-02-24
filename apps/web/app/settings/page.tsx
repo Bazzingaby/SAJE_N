@@ -11,6 +11,7 @@ import Link from 'next/link';
 const PROVIDERS: { value: LLMProvider; label: string }[] = [
   { value: 'openai', label: 'OpenAI' },
   { value: 'anthropic', label: 'Anthropic (Claude)' },
+  { value: 'gemini', label: 'Gemini (Google)' },
   { value: 'openrouter', label: 'OpenRouter' },
   { value: 'groq', label: 'Groq' },
   { value: 'ollama', label: 'Ollama (local)' },

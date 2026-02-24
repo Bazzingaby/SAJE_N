@@ -3,9 +3,11 @@
 > **The Touch-First, AI-Native, End-to-End Development & Data Workflow Platform**
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/Status-Pre--Alpha-orange.svg)]()
+[![Status](https://img.shields.io/badge/Status-Alpha-orange.svg)]()
 [![Platform](https://img.shields.io/badge/Platform-Web%20App-green.svg)]()
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![CI/CD](https://github.com/Bazzingaby/SAJE_N/actions/workflows/ci.yml/badge.svg)](https://github.com/Bazzingaby/SAJE_N/actions/workflows/ci.yml)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FBazzingaby%2FSAJE_N)
 
 ---
 
@@ -130,8 +132,8 @@ SAJE_N/
 | **Sprint 2: Canvas & Collab** | ✅ Complete    | ReactFlow, Yjs server + context, Terminal, Git panel, mode switching      |
 | **Sprint 3: AI Integration**  | ✅ Complete    | AI Router, Chat panel, Inline AI, Agent framework, Settings               |
 | **Sprint 4: Data Pipelines**  | ✅ Complete    | Flow nodes, config panels, pipeline runner, Data canvas (Table/Chart/SQL) |
-| **Sprint 5: Design & Polish** | 🔄 Next        | Design canvas, Pencil, Board, Docker, docs                                |
-| Sprint 6: Launch              | 🔲 Not started | CI/CD, landing, demo, community                                           |
+| **Sprint 5: Design & Polish** | ✅ Complete    | Design canvas, Pencil, Board, Docker, docs                                |
+| **Sprint 6: Launch**          | ✅ Complete    | CI/CD, landing, demo, community                                           |
 
 See [CLAUDE.md](CLAUDE.md) for the full state machine and [AGENTS.md](AGENTS.md) for the current sprint runbook.
 

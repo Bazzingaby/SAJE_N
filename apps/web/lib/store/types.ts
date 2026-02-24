@@ -63,6 +63,7 @@ export type LLMProvider =
   | 'openrouter'
   | 'anthropic'
   | 'openai'
+  | 'gemini'
   | 'groq'
   | 'ollama'
   | 'huggingface'

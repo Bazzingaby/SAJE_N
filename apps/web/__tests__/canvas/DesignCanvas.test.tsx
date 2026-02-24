@@ -26,6 +26,11 @@ describe('DesignCanvas', () => {
     expect(screen.getByTitle('Add Rectangle')).toBeInTheDocument();
     expect(screen.getByTitle('Add Circle')).toBeInTheDocument();
     expect(screen.getByTitle('Add Text')).toBeInTheDocument();
+    expect(screen.getByTitle('Add Button Component')).toBeInTheDocument();
+    expect(screen.getByTitle('Add Card Component')).toBeInTheDocument();
+    expect(screen.getByTitle('Add Input Component')).toBeInTheDocument();
+    expect(screen.getByTitle('Group Selection')).toBeInTheDocument();
+    expect(screen.getByTitle('Ungroup Selection')).toBeInTheDocument();
   });
 
   it('renders export button', () => {

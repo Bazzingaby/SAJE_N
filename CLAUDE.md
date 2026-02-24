@@ -68,17 +68,18 @@ Every Claude Code session operates as a full engineering team:
                             S5.5 Documentation (3pts) ✅
        │                                    = 22pts
        ▼
-[SPRINT_6_LAUNCH] → S6.1 CI/CD (5pts) ← current state
-                     S6.2 Landing page (3pts)
-                     S6.3 Demo workspace (3pts)
-                     S6.4 Community (2pts)
-                     S6.5 Optimization (3pts)
+[SPRINT_6_LAUNCH] ✅ done (16/16pts)
+                     S6.1 CI/CD (5pts) ✅
+                     S6.2 Landing page (3pts) ✅
+                     S6.3 Demo workspace (3pts) ✅
+                     S6.4 Community (2pts) ✅
+                     S6.5 Optimization (3pts) ✅
        │                                    = 16pts
        ▼
 [MVP_COMPLETE]                        Total = 125pts
 ```
 
-**Current State: `SPRINT_4_DATA_PIPELINES` complete — Ready for Sprint 5 (Design & Polish)**
+**Current State: `[MVP_COMPLETE]` ✅ — Version 0.2.0-alpha is ready for public release.**
 
 ## Execution Protocol
 
